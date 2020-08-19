@@ -1,9 +1,10 @@
 import { Injectable } from "@angular/core";
-import { ProductResolved } from './product';
+import { ProductResolved, Product, IProvider } from './product';
 import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { ProductService } from './product.service';
 import { map, catchError } from 'rxjs/operators';
+import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 
 @Injectable(
     {
@@ -11,18 +12,18 @@ import { map, catchError } from 'rxjs/operators';
     }
 )
 export class ProductDetailResolver implements Resolve<ProductResolved> {
-    
-    constructor(private readonly productService: ProductService) {}
-    
+
+    constructor(private readonly productService: ProductService, private readonly formBuilder: FormBuilder) { }
+
     resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<ProductResolved> {
         const productId = route.paramMap.get('id');
-        if(isNaN(+productId)) {
+        if (isNaN(+productId)) {
             const message = `${productId} is an invalid id`;
-            return of({product: null, error: message});
+            return of({ product: null, productForm: null, error: message });
         }
         return this.productService.getProduct(+productId).pipe(
             map(
-                product => ({product: product})
+                product => ({ product: product, productForm: this.createForm(product) })
             ),
             catchError(
                 error => {
@@ -31,5 +32,20 @@ export class ProductDetailResolver implements Resolve<ProductResolved> {
                 }
             ));
     }
-    
+    createForm(product: Product): FormGroup {
+        if (product) {
+            const productForm = this.formBuilder.group(
+                {
+                    ...product,
+                    tags: [product.tags],
+                    providers: this.buildProviders(product.providers)
+                });
+            return productForm;
+        }
+    }
+
+    buildProviders(providers: IProvider[]): FormArray {
+        return this.formBuilder.array(providers.map(provider => this.formBuilder.group(provider)));
+    }
+
 }

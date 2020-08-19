@@ -1,77 +1,58 @@
 <div class="card-body">
-  <form novalidate
-        #productForm="ngForm">
+  <form [formGroup]="productForm" *ngIf="productForm">
     <fieldset>
       <legend>Basic Product Information</legend>
 
       <div class="form-group row">
-        <label class="col-md-2 col-form-label"
-               for="productNameId">Product Name</label>
+        <label class="col-md-2 col-form-label" for="productNameId">Product Name</label>
         <div class="col-md-8">
-          <input class="form-control"
-                 id="productNameId"
-                 type="text"
-                 placeholder="Name (required)"
-                 required
-                 minlength="3"
-                 [(ngModel)]=product.productName
-                 name="productName"
-                 #productNameVar="ngModel"
-                 [ngClass]="{'is-invalid': (productNameVar.touched || 
-                                            productNameVar.dirty ||
-                                            product.id !== 0) && 
-                                            !productNameVar.valid }" />
-          <span class="invalid-feedback">
-            <span *ngIf="productNameVar.errors?.required">
-              Product name is required.
-            </span>
-            <span *ngIf="productNameVar.errors?.minlength">
-              Product name must be at least three characters.
-            </span>
-          </span>
+          <input class="form-control" id="productNameId" type="text" placeholder="Name (required)"
+            formControlName="productName" />
         </div>
       </div>
 
       <div class="form-group row">
-        <label class="col-md-2 col-form-label"
-               for="productCodeId">Product Code</label>
+        <label class="col-md-2 col-form-label" for="productCodeId">Product Code</label>
         <div class="col-md-8">
-          <input class="form-control"
-                 id="productCodeId"
-                 type="text"
-                 placeholder="Code (required)"
-                 required
-                 [(ngModel)]=product.productCode
-                 name="productCode"
-                 #productCodeVar="ngModel"
-                 [ngClass]="{'is-invalid': (productCodeVar.touched || 
-                                            productCodeVar.dirty ||
-                                            product.id !== 0) &&
-                                            !productCodeVar.valid }" />
-          <span class="invalid-feedback">
-            <span *ngIf="productCodeVar.errors?.required">
-              Product code is required.
-            </span>
-          </span>
+          <input class="form-control" id="productCodeId" type="text" placeholder="Code (required)"
+            formControlName="productCode" />
         </div>
       </div>
 
       <div class="form-group row">
-        <label class="col-md-2 col-form-label"
-               for="descriptionId">Description</label>
+        <label class="col-md-2 col-form-label" for="descriptionId">Description</label>
         <div class="col-md-8">
-          <textarea class="form-control"
-                    id="descriptionId"
-                    placeholder="Description"
-                    rows=3
-                    [(ngModel)]=product.description
-                    name="description"></textarea>
+          <textarea class="form-control" id="descriptionId" placeholder="Description" rows=3
+            formControlName="description"></textarea>
         </div>
+      </div>
+
+      <div formArrayName="providers" *ngFor="let provider of providers.controls; let i=index;">
+        <div [formGroupName]="i">
+          <span class="text-small text-secondary">{{+i+1}}. Provider</span><span class=" text-danger btn-sm ml-1 fa fa-trash" (click)="deleteProvider(i)"></span>
+          <div class="form-group row">
+            <label class="col-md-2 col-form-label" [attr.for]="'providerName'+i">Provider Name</label>
+            <div class="col-md-8">
+              <input class="form-control" [id]="'providerName'+i" type="text" placeholder="Provider Name"
+                formControlName="providerName" />
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-md-2 col-form-label" for="providerAddress">Provider Address</label>
+            <div class="col-md-8">
+              <textarea class="form-control" id="providerAddress" placeholder="Provider Address" rows=3
+                formControlName="providerAddress"></textarea>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="text-right col-md-10"><button class="btn btn-primary" (click)="addProvider()">Add Provider</button>
       </div>
     </fieldset>
   </form>
 </div>
 
-<div class='alert alert-danger'
-     *ngIf='errorMessage'>{{errorMessage}}
+<div class='alert alert-danger' *ngIf='errorMessage'>{{errorMessage}}
 </div>

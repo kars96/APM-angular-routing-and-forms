@@ -1,6 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, Input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { NgForm } from '@angular/forms';
+import { FormGroup, FormBuilder, FormArray } from '@angular/forms';
 
 import { Product, ProductResolved } from '../product';
 
@@ -8,23 +8,44 @@ import { Product, ProductResolved } from '../product';
   templateUrl: './product-edit-info.component.html'
 })
 export class ProductEditInfoComponent implements OnInit {
-  @ViewChild(NgForm, {static: false}) productForm: NgForm;
 
   errorMessage: string;
   product: Product;
 
-  constructor(private route: ActivatedRoute) { }
+  @Input() public productForm: FormGroup;
+
+  constructor(private route: ActivatedRoute,
+    private readonly formBuilder: FormBuilder) { }
 
   ngOnInit(): void {
     this.route.parent.data.subscribe(
-      (data) => {
+      data => {
         const resolvedData = data['resolvedData'];
-        if(this.productForm) {
-          this.productForm.reset();
+        if (resolvedData.productForm) {
+          this.productForm = resolvedData.productForm;
+          this.product = resolvedData.product;
         }
-        this.product = resolvedData.product;
-        this.errorMessage = resolvedData.error;
+        this.errorMessage = resolvedData.errorMessage;
       }
-    );
+    )
+  }
+
+  buildProviders(): FormGroup {
+    return this.formBuilder.group({
+      providerName: '',
+      providerAddress: ''
+    });
+  }
+
+  get providers(): FormArray {
+    return this.productForm.get('providers') as FormArray;
+  }
+
+  deleteProvider(i: number) {
+    this.providers.removeAt(i);
+  }
+
+  addProvider() {
+    this.providers.push(this.buildProviders());
   }
 }

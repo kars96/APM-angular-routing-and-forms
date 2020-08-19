@@ -10,6 +10,12 @@ export interface Product {
   description: string;
   starRating: number;
   imageUrl: string;
+  providers: IProvider[];
+}
+
+export interface IProvider {
+  providerName: string;
+  providerAddress: string;
 }
 
 export interface ProductResolved {

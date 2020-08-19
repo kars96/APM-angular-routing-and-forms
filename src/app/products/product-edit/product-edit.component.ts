@@ -5,7 +5,7 @@ import { MessageService } from '../../messages/message.service';
 import { Product, ProductResolved } from '../product';
 import { ProductService } from '../product.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { JsonPipe } from '@angular/common';
+import { FormGroup, FormBuilder } from '@angular/forms';
 
 @Component({
   templateUrl: './product-edit.component.html',
@@ -18,19 +18,23 @@ export class ProductEditComponent implements OnInit {
   dataIsValid: { [key: string]: boolean };
   private currentProduct: Product;
   private originalProduct: Product;
+  public productForm: FormGroup;
 
   constructor(private productService: ProductService,
               private messageService: MessageService,
               private readonly actRoute: ActivatedRoute,
-              private readonly router: Router) { }
+              private readonly router: Router,
+              private readonly fb: FormBuilder) { }
 
   ngOnInit() {
     this.actRoute.data.subscribe(
       (data) => {
-        const resolvedData = data['resolvedData'] as ProductResolved;
-        const product = resolvedData.product;
+        const resolvedData = data['resolvedData'];
+        console.log(resolvedData)
+        this.product = resolvedData.product;
+        this.productForm = resolvedData.productForm;
         this.errorMessage = resolvedData.error;
-        this.onProductRetrieved(product);
+        // this.onProductRetrieved(product);
       });
   }
 
@@ -52,6 +56,15 @@ export class ProductEditComponent implements OnInit {
     if (!this.product) {
       this.pageTitle = 'No product found';
     } else {
+      // this.productForm = this.fb.group(
+      //   { ...this.product,
+      //     providers: this.fb.group({
+      //       providerName: '',
+      //       providerAddress: ''
+      //     }
+      //     )
+      //    });
+      //    console.log(this.productForm)
       if (this.product.id === 0) {
         this.pageTitle = 'Add Product';
       } else {
@@ -77,12 +90,12 @@ export class ProductEditComponent implements OnInit {
   saveProduct(): void {
     if (this.isValid() === true) {
       if (this.product.id === 0) {
-        this.productService.createProduct(this.product).subscribe({
+        this.productService.createProduct(this.productForm.value).subscribe({
           next: () => this.onSaveComplete(`The new ${this.product.productName} was saved`),
           error: err => this.errorMessage = err
         });
       } else {
-        this.productService.updateProduct(this.product).subscribe({
+        this.productService.updateProduct(this.productForm.value).subscribe({
           next: () => this.onSaveComplete(`The updated ${this.product.productName} was saved`),
           error: err => this.errorMessage = err
         });
@@ -107,11 +120,10 @@ export class ProductEditComponent implements OnInit {
   }
 
   isValid(tabName?: string) {
-    this.validate();
-    if (tabName) {
-      return this.dataIsValid[tabName];
+    if(this.productForm) {
+      return this.productForm.valid;
     }
-    return Object.keys(this.dataIsValid).every( key => this.dataIsValid[key] === true);
+    return true;
   }
 
   validate() {
